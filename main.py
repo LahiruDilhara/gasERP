@@ -8,16 +8,16 @@ from dependency_injector import providers
 from fastapi import FastAPI
 
 from config.applicationConfig import ApplicationSettings
-from controllers.health_controller import HealthController
+from controllers.health_controller import router as health_router
 from core.di.container import Container
 from startups.validator import run_all_validators
 from utils.logger import configure_logging, get_logger
 
 _log = get_logger(__name__)
 
-
 def register_controllers(app: FastAPI, container: Container) -> None:
-    HealthController().register(app)
+    app.include_router(health_router)
+    _log.info("Health routes mounted on application")
 
 
 def create_app() -> FastAPI:
@@ -39,6 +39,7 @@ def create_app() -> FastAPI:
     app.state.container = container
 
     register_controllers(app, container)
+
     return app
 
 

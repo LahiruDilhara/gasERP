@@ -8,8 +8,10 @@ from dependency_injector import providers
 from fastapi import FastAPI
 
 from config.applicationConfig import ApplicationSettings
+from controllers.auth_controller import router as auth_router
 from controllers.health_controller import router as health_router
 from core.di.container import Container
+from startups.initialize_models import initialize_models
 from startups.validator import run_all_validators
 from utils.logger import configure_logging, get_logger
 
@@ -18,6 +20,8 @@ _log = get_logger(__name__)
 def register_controllers(app: FastAPI, container: Container) -> None:
     app.include_router(health_router)
     _log.info("Health routes mounted on application")
+    app.include_router(auth_router)
+    _log.info("Auth routes mounted on application")
 
 
 def create_app() -> FastAPI:
@@ -32,6 +36,7 @@ def create_app() -> FastAPI:
         _log.info("Startup: running validators")
         run_all_validators(container)
         _log.info("Startup: validators completed")
+        initialize_models(container.db_connection().engine)
         yield
 
     app = FastAPI(title="gaserp", lifespan=lifespan)
